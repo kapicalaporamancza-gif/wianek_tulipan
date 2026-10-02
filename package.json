@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "private": true,
   "type": "module",
+  "overrides": {
+    "vite": "^7"
+  },
   "scripts": {
     "dev": "astro dev --host 0.0.0.0",
     "build": "astro check && astro build",
@@ -10,10 +13,10 @@
     "test": "vitest run"
   },
   "dependencies": {
-    "@astrojs/node": "latest",
+    "@astrojs/node": "^10.1.4",
     "@fontsource/andika": "latest",
     "@tailwindcss/vite": "latest",
-    "astro": "latest",
+    "astro": "^6.4.8",
     "better-sqlite3": "latest",
     "tailwindcss": "latest"
   },
