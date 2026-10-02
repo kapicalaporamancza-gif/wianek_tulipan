@@ -1,0 +1,14 @@
+node_modules/
+dist/
+.astro/
+.env
+.env.*
+!.env.example
+key.txt
+.claude/
+
+data/*.sqlite
+data/*.sqlite-*
+
+*.log
+.DS_Store

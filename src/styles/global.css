@@ -1,0 +1,116 @@
+@import "@fontsource/andika/400.css";
+@import "@fontsource/andika/700.css";
+@import "tailwindcss";
+
+@theme {
+  --font-andika: "Andika", ui-rounded, sans-serif;
+  --color-wianek-cream: #fbf3de;
+  --color-wianek-cream-dark: #f1dfba;
+  --color-wianek-rust: #a85139;
+  --color-wianek-green: #474c2c;
+  --color-wianek-green-dark: #343921;
+  --color-wianek-gold: #e9b44c;
+}
+
+:root {
+  color: #a85139;
+  background: #fbf3de;
+  font-family: "Andika", ui-rounded, sans-serif;
+  font-synthesis: none;
+  letter-spacing: 0;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+html {
+  min-width: 320px;
+  scroll-behavior: smooth;
+}
+
+body {
+  min-width: 320px;
+  min-height: 100vh;
+  margin: 0;
+  background: #fbf3de;
+}
+
+button,
+input {
+  letter-spacing: 0;
+}
+
+button,
+a,
+input {
+  -webkit-tap-highlight-color: transparent;
+}
+
+::selection {
+  color: #fbf3de;
+  background: #a85139;
+}
+
+:focus-visible {
+  outline: 3px solid #e9b44c;
+  outline-offset: 4px;
+}
+
+[hidden] {
+  display: none !important;
+}
+
+/* Utility classes */
+.extra-bold {
+  font-weight: 700;
+  -webkit-text-stroke: 0.6px currentColor;
+  letter-spacing: 2px;
+}
+
+/* Hero section */
+.book-image {
+  transform: rotate(-1deg);
+  filter: drop-shadow(0 12px 24px rgb(0 0 0 / 0.18));
+}
+
+.hero-flower {
+  filter: drop-shadow(0 18px 20px rgb(71 76 44 / 0.14));
+}
+
+.corner-flower {
+  transform: rotate(-25deg);
+}
+
+/* Subscription panel */
+.subscription-panel {
+  border: 1px solid rgb(168 81 57 / 0.18);
+  background: rgb(255 255 255 / 0.58);
+  box-shadow: 0 24px 70px rgb(71 76 44 / 0.12);
+}
+
+.status-message {
+  min-height: 1.5rem;
+}
+
+.status-message.is-error {
+  color: #8d2f25;
+}
+
+.status-message.is-success {
+  color: #474c2c;
+}
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  html {
+    scroll-behavior: auto;
+  }
+
+  *,
+  *::before,
+  *::after {
+    scroll-behavior: auto !important;
+    transition-duration: 0.01ms !important;
+  }
+}

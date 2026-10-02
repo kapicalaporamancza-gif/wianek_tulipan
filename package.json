@@ -1,0 +1,29 @@
+{
+  "name": "wydawnictwo-wianek",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "astro dev --host 0.0.0.0",
+    "build": "astro check && astro build",
+    "start": "node dist/server/entry.mjs",
+    "test": "vitest run"
+  },
+  "dependencies": {
+    "@astrojs/node": "latest",
+    "@fontsource/andika": "latest",
+    "@tailwindcss/vite": "latest",
+    "astro": "latest",
+    "better-sqlite3": "latest",
+    "tailwindcss": "latest"
+  },
+  "devDependencies": {
+    "@astrojs/check": "latest",
+    "@types/better-sqlite3": "latest",
+    "typescript": "latest",
+    "vitest": "latest"
+  },
+  "engines": {
+    "node": ">=20.19.0"
+  }
+}
