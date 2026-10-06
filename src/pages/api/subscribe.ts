@@ -1,17 +1,17 @@
-import type { APIRoute } from 'astro';
-import { getDatabase, type SubscriberRecord } from '../../lib/db';
+import type { APIRoute } from "astro";
+import { getDatabase, type SubscriberRecord } from "../../lib/db";
 import {
   addSubscriberToMailerLite,
   isMailerLiteConfigured,
-} from '../../lib/mailerlite';
-import { validateSubscription } from '../../lib/validation';
+} from "../../lib/mailerlite";
+import { validateSubscription } from "../../lib/validation";
 
 export const prerender = false;
 
 async function readPayload(request: Request) {
-  const contentType = request.headers.get('content-type') || '';
+  const contentType = request.headers.get("content-type") || "";
 
-  if (contentType.includes('application/json')) {
+  if (contentType.includes("application/json")) {
     return request.json();
   }
 
@@ -21,7 +21,7 @@ async function readPayload(request: Request) {
 function successResponse(mailerlite: boolean) {
   return Response.json(
     {
-      message: 'Dziękujemy! Twój adres został zapisany.',
+      message: "Dziękujemy! Twój adres został zapisany.",
       mailerlite,
     },
     { status: 200 },
@@ -35,7 +35,7 @@ export const POST: APIRoute = async ({ request }) => {
     payload = await readPayload(request);
   } catch {
     return Response.json(
-      { message: 'Nie udało się odczytać formularza.' },
+      { message: "Nie udało się odczytać formularza." },
       { status: 400 },
     );
   }
@@ -48,7 +48,7 @@ export const POST: APIRoute = async ({ request }) => {
   const db = getDatabase();
   const now = new Date().toISOString();
   const existing = db
-    .prepare('SELECT * FROM subscribers WHERE email = ?')
+    .prepare("SELECT * FROM subscribers WHERE email = ?")
     .get(validation.value.email) as SubscriberRecord | undefined;
 
   if (!existing) {
@@ -57,16 +57,16 @@ export const POST: APIRoute = async ({ request }) => {
          email, consent, mailerlite_status, created_at, updated_at
        ) VALUES (?, ?, 'pending', ?, ?)`,
     ).run(validation.value.email, 1, now, now);
-  } else if (existing.mailerlite_status === 'synced') {
+  } else if (existing.mailerlite_status === "synced") {
     return successResponse(true);
   }
 
   const subscriber = db
-    .prepare('SELECT * FROM subscribers WHERE email = ?')
+    .prepare("SELECT * FROM subscribers WHERE email = ?")
     .get(validation.value.email) as SubscriberRecord;
 
   if (!isMailerLiteConfigured()) {
-    const status = import.meta.env.PROD ? 'not_configured' : 'disabled';
+    const status = import.meta.env.PROD ? "not_configured" : "disabled";
     db.prepare(
       `UPDATE subscribers
        SET mailerlite_status = ?, mailerlite_error = NULL, updated_at = ?
@@ -77,8 +77,11 @@ export const POST: APIRoute = async ({ request }) => {
   }
 
   try {
-    const mailerlite = await addSubscriberToMailerLite(validation.value.email);
-    const mailerliteStatus: SubscriberRecord['mailerlite_status'] = 'synced';
+    const mailerlite = await addSubscriberToMailerLite(
+      validation.value.email,
+      validation.value.name,
+    );
+    const mailerliteStatus: SubscriberRecord["mailerlite_status"] = "synced";
     db.prepare(
       `UPDATE subscribers
        SET mailerlite_status = ?,
@@ -96,7 +99,7 @@ export const POST: APIRoute = async ({ request }) => {
     return successResponse(true);
   } catch (error) {
     const message =
-      error instanceof Error ? error.message : 'Nieznany błąd MailerLite';
+      error instanceof Error ? error.message : "Nieznany błąd MailerLite";
     db.prepare(
       `UPDATE subscribers
        SET mailerlite_status = 'failed', mailerlite_error = ?, updated_at = ?
@@ -105,7 +108,8 @@ export const POST: APIRoute = async ({ request }) => {
 
     return Response.json(
       {
-        message: 'Zapis lokalny działa, ale wysyłka do MailerLite chwilowo nie działa. Spróbuj ponownie.',
+        message:
+          "Zapis lokalny działa, ale wysyłka do MailerLite chwilowo nie działa. Spróbuj ponownie.",
       },
       { status: 502 },
     );

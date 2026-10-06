@@ -45,6 +45,7 @@ export function isMailerLiteConfigured() {
 
 export async function addSubscriberToMailerLite(
   email: string,
+  name: string,
 ): Promise<MailerLiteResult> {
   const apiKey = requiredEnvironment("MAILERLITE_API_KEY");
   const groupId = requiredEnvironment("MAILERLITE_GROUP_ID");
@@ -58,7 +59,9 @@ export async function addSubscriberToMailerLite(
     },
     body: JSON.stringify({
       email,
-      fields: {},
+      fields: {
+        name,
+      },
       groups: [groupId],
       status: getSubscriberStatus(),
       resubscribe: false,

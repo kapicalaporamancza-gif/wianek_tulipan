@@ -153,8 +153,23 @@ import tulipanFour from '../../resources/tulipan 4.png';
           </p>
 
           <form id="subscription-form" class="mt-6 grid gap-4" novalidate>
+            <label for="name" class="text-sm font-semibold text-wianek-green">
+              Imię
+            </label>
+            <input
+              id="name"
+              name="name"
+              type="text"
+              autocomplete="name"
+              inputmode="text"
+              maxlength="100"
+              required
+              placeholder="Twoje imię"
+              class="min-h-12 rounded-xl border border-wianek-rust/25 bg-white/70 px-4 py-3 text-wianek-rust placeholder:text-wianek-rust/45 focus:border-wianek-green focus:outline-none focus:ring-2 focus:ring-wianek-green/20"
+            />
+
             <label for="email" class="text-sm font-semibold text-wianek-green">
-              Adres e-mail
+              E-mail
             </label>
             <input
               id="email"
@@ -167,6 +182,7 @@ import tulipanFour from '../../resources/tulipan 4.png';
               placeholder="twojadres@example.com"
               class="min-h-12 rounded-xl border border-wianek-rust/25 bg-white/70 px-4 py-3 text-wianek-rust placeholder:text-wianek-rust/45 focus:border-wianek-green focus:outline-none focus:ring-2 focus:ring-wianek-green/20"
             />
+
             <label class="flex cursor-pointer items-start gap-3 text-sm leading-6 text-wianek-rust/90">
               <input
                 name="consent"
@@ -175,15 +191,21 @@ import tulipanFour from '../../resources/tulipan 4.png';
                 class="mt-1 h-5 w-5 shrink-0 accent-[#474c2c]"
               />
               <span>
-                Chcę otrzymywać wiadomości od Wydawnictwa Wianek i akceptuję przetwarzanie mojego adresu do tego celu.
+                Chcę otrzymywać newsletter Wydawnictwa Wianek na podany przeze mnie adres e-mail. W newsletterze znajdę informacje o naszych nowych książkach i produktach, darmowe materiały, ciekawostki oraz oferty specjalne. Wiem, że mogę w każdej chwili zrezygnować z otrzymywania newslettera.
               </span>
             </label>
+            <p class="text-xs text-wianek-rust/70">
+              Administratorem Twoich danych osobowych jest Wydawnictwo Wianek. Szczegółowe informacje dotyczące przetwarzania danych osobowych znajdziesz w
+              <a href="/regulamin-newslettera" class="underline hover:text-wianek-green transition" target="_blank" rel="noopener noreferrer">
+                Regulaminie newslettera
+              </a>.
+            </p>
             <button
               id="submit-subscription"
               type="submit"
               class="mt-2 inline-flex min-h-12 items-center justify-center rounded-xl bg-wianek-green px-6 py-3 font-bold text-wianek-cream transition hover:-translate-y-0.5 hover:bg-wianek-green-dark disabled:cursor-wait disabled:opacity-70"
             >
-              ZAPISZ MNIE
+              DOŁĄCZ DO NAS
             </button>
             <p
               id="form-status"
@@ -197,84 +219,88 @@ import tulipanFour from '../../resources/tulipan 4.png';
     </main>
 
     <script is:inline>
-      const openButton = document.querySelector('#open-subscription');
-      const closeButton = document.querySelector('#close-subscription');
-      const overlay = document.querySelector('#subscription-overlay');
-      const form = document.querySelector('#subscription-form');
-      const emailInput = document.querySelector('#email');
-      const submitButton = document.querySelector('#submit-subscription');
-      const status = document.querySelector('#form-status');
+      document.addEventListener('DOMContentLoaded', () => {
+        const openButton = document.querySelector('#open-subscription');
+        const closeButton = document.querySelector('#close-subscription');
+        const overlay = document.querySelector('#subscription-overlay');
+        const form = document.querySelector('#subscription-form');
+        const emailInput = document.querySelector('#email');
+        const submitButton = document.querySelector('#submit-subscription');
+        const status = document.querySelector('#form-status');
 
-      const setPanelVisible = (visible) => {
-        overlay.classList.toggle('hidden', !visible);
-        overlay.classList.toggle('flex', visible);
+        const setPanelVisible = (visible) => {
+          overlay.classList.toggle('hidden', !visible);
+          overlay.classList.toggle('flex', visible);
 
-        // Blokuje przewijanie strony
-        document.body.style.overflow = visible ? 'hidden' : '';
+          // Blokuje przewijanie strony
+          document.body.style.overflow = visible ? 'hidden' : '';
 
-        if (visible) {
-          window.setTimeout(() => emailInput?.focus(), 50);
-        }
-      };
+          if (visible) {
+            window.setTimeout(() => emailInput?.focus(), 50);
+          }
+        };
 
-      openButton?.addEventListener('click', () => setPanelVisible(true));
-      closeButton?.addEventListener('click', () => setPanelVisible(false));
+        openButton?.addEventListener('click', () => setPanelVisible(true));
+        closeButton?.addEventListener('click', () => setPanelVisible(false));
 
-      // Zamykanie po kliknięciu w tło
-      overlay?.addEventListener('click', (event) => {
-        if (event.target === overlay) {
-          setPanelVisible(false);
-        }
-      });
+        // Zamykanie po kliknięciu w tło
+        overlay?.addEventListener('click', (event) => {
+          if (event.target === overlay) {
+            setPanelVisible(false);
+          }
+        });
 
-      form?.addEventListener('submit', async (event) => {
-        event.preventDefault();
-        status.textContent = '';
-        status.className = 'status-message text-sm font-semibold';
+        form?.addEventListener('submit', async (event) => {
+          event.preventDefault();
+          status.textContent = '';
+          status.className = 'status-message text-sm font-semibold';
 
-        if (!form.checkValidity()) {
-          form.reportValidity();
-          return;
-        }
-
-        const formData = new FormData(form);
-        submitButton.disabled = true;
-        submitButton.textContent = 'ZAPISUJEMY…';
-
-        try {
-          const response = await fetch('/api/subscribe', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              Accept: 'application/json',
-            },
-            body: JSON.stringify({
-              email: formData.get('email'),
-              consent: formData.get('consent') === 'on',
-            }),
-          });
-
-          const result = await response.json().catch(() => ({}));
-
-          if (!response.ok) {
-            throw new Error(result.message || 'Nie udało się zapisać adresu.');
+          if (!form.checkValidity()) {
+            form.reportValidity();
+            return;
           }
 
-          status.textContent = result.message || 'Dziękujemy! Twój adres został zapisany.';
-          status.classList.add('is-success');
-          form.reset();
+          const formData = new FormData(form);
+          submitButton.disabled = true;
+          submitButton.textContent = 'ZAPISUJEMY…';
 
-          // Zamknij modal po 1,5 s
-          setTimeout(() => setPanelVisible(false), 1500);
-        } catch (error) {
-          status.textContent = error instanceof Error
-            ? error.message
-            : 'Spróbuj ponownie za chwilę.';
-          status.classList.add('is-error');
-        } finally {
-          submitButton.disabled = false;
-          submitButton.textContent = 'ZAPISZ MNIE';
-        }
+          try {
+            const response = await fetch('/api/subscribe', {
+              method: 'POST',
+              headers: {
+                'Content-Type': 'application/json',
+                Accept: 'application/json',
+              },
+              body: JSON.stringify({
+                name: formData.get('name'),
+                email: formData.get('email'),
+                consent: formData.get('consent') === 'on',
+              }),
+            });
+
+            const result = await response.json().catch(() => ({}));
+
+            if (!response.ok) {
+              throw new Error(result.message || 'Nie udało się zapisać adresu.');
+            }
+
+            status.textContent = result.message || 'Dziękujemy! Twój adres został zapisany.';
+            status.classList.add('is-success');
+            form.reset();
+
+            // Zamknij modal po 1,5 s
+            setTimeout(() => setPanelVisible(false), 1500);
+            status.textContent = ' ';
+          } catch (error) {
+            status.textContent = error instanceof Error
+              ? error.message
+              : 'Spróbuj ponownie za chwilę.';
+            status.classList.add('is-error');
+          } finally {
+            submitButton.disabled = false;
+            submitButton.textContent = 'DOŁĄCZ DO NAS';
+          }
+        });
       });
     </script>
   </body>
