@@ -1,5 +1,9 @@
 import { describe, expect, it } from 'vitest';
-import { normalizeEmail, validateSubscription } from '../src/lib/validation';
+import {
+  normalizeCampaign,
+  normalizeEmail,
+  validateSubscription,
+} from '../src/lib/validation';
 
 describe('normalizeEmail', () => {
   it('normalizuje adres bez zmiany części lokalnej', () => {
@@ -16,20 +20,80 @@ describe('normalizeEmail', () => {
   );
 });
 
+describe('normalizeCampaign', () => {
+  it('domyślnie zwraca tulipan dla pustej wartości', () => {
+    expect(normalizeCampaign(undefined)).toBe('tulipan');
+    expect(normalizeCampaign('')).toBe('tulipan');
+  });
+
+  it('rozpoznaje kampanie i odrzuca nieznane', () => {
+    expect(normalizeCampaign('KAKTUS')).toBe('kaktus');
+    expect(normalizeCampaign('tulipan')).toBe('tulipan');
+    expect(normalizeCampaign('roza')).toBeNull();
+  });
+});
+
 describe('validateSubscription', () => {
   it('przyjmuje poprawny adres i wymaganą zgodę', () => {
     expect(
-      validateSubscription({ email: 'Czytelnik@Example.COM', consent: true }),
+      validateSubscription({
+        name: 'Czytelnik',
+        email: 'Czytelnik@Example.COM',
+        consent: true,
+        campaign: 'kaktus',
+      }),
     ).toEqual({
       ok: true,
-      value: { email: 'Czytelnik@example.com', consent: true },
+      value: {
+        name: 'Czytelnik',
+        email: 'Czytelnik@example.com',
+        consent: true,
+        campaign: 'kaktus',
+      },
+    });
+  });
+
+  it('przypisuje kampanię domyślną, gdy pole jest pominięte', () => {
+    expect(
+      validateSubscription({
+        name: 'Czytelnik',
+        email: 'czytelnik@example.com',
+        consent: true,
+      }),
+    ).toEqual({
+      ok: true,
+      value: {
+        name: 'Czytelnik',
+        email: 'czytelnik@example.com',
+        consent: true,
+        campaign: 'tulipan',
+      },
     });
   });
 
   it('odrzuca brak zgody', () => {
-    expect(validateSubscription({ email: 'czytelnik@example.com' })).toEqual({
+    expect(
+      validateSubscription({
+        name: 'Czytelnik',
+        email: 'czytelnik@example.com',
+      }),
+    ).toEqual({
       ok: false,
       message: 'Musisz wyrazić zgodę na przesyłanie wiadomości.',
+    });
+  });
+
+  it('odrzuca nieznaną kampanię', () => {
+    expect(
+      validateSubscription({
+        name: 'Czytelnik',
+        email: 'czytelnik@example.com',
+        consent: true,
+        campaign: 'roza',
+      }),
+    ).toEqual({
+      ok: false,
+      message: 'Sprawdź poprawność formularza.',
     });
   });
 });

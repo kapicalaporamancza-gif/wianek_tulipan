@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { addSubscriberToMailerLite } from "../src/lib/mailerlite";
+import { addSubscriberToMailerLite, isMailerLiteConfigured } from "../src/lib/mailerlite";
 
 describe("addSubscriberToMailerLite", () => {
   const originalEnvironment = { ...process.env };
@@ -7,6 +7,8 @@ describe("addSubscriberToMailerLite", () => {
   beforeEach(() => {
     process.env.MAILERLITE_API_KEY = "test-key";
     process.env.MAILERLITE_GROUP_ID = "123456";
+    process.env.MAILERLITE_GROUP_TULIPAN = "tulipan-group";
+    process.env.MAILERLITE_GROUP_KAKTUS = "kaktus-group";
     process.env.MAILERLITE_SUBSCRIBER_STATUS = "unconfirmed";
   });
 
@@ -15,7 +17,7 @@ describe("addSubscriberToMailerLite", () => {
     vi.unstubAllGlobals();
   });
 
-  it("wysyła adres do właściwej grupy z podwójnym opt-in", async () => {
+  it("wysyła adres do grupy wskazanej kampanii z podwójnym opt-in", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ data: { id: "subscriber-id" } }), {
         status: 201,
@@ -25,7 +27,7 @@ describe("addSubscriberToMailerLite", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     await expect(
-      addSubscriberToMailerLite("test@example.com", "test"),
+      addSubscriberToMailerLite("test@example.com", "test", "kaktus"),
     ).resolves.toEqual({
       subscriberId: "subscriber-id",
     });
@@ -36,12 +38,43 @@ describe("addSubscriberToMailerLite", () => {
         method: "POST",
         body: JSON.stringify({
           email: "test@example.com",
-          fields: {},
-          groups: ["123456"],
+          fields: { name: "test" },
+          groups: ["kaktus-group"],
           status: "unconfirmed",
           resubscribe: false,
         }),
       }),
     );
+  });
+
+  it("wybiera grupę tulipana dla kampanii tulipan", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ data: { id: "subscriber-id" } }), {
+        status: 201,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await addSubscriberToMailerLite("test@example.com", "test", "tulipan");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      "https://connect.mailerlite.com/api/subscribers",
+      expect.objectContaining({
+        body: expect.stringContaining('"groups":["tulipan-group"]'),
+      }),
+    );
+  });
+
+  it("dla tulipana korzysta ze wspólnej grupy, gdy brak dedykowanej zmiennej", () => {
+    process.env.MAILERLITE_GROUP_TULIPAN = "";
+
+    expect(isMailerLiteConfigured("tulipan")).toBe(true);
+  });
+
+  it("dla kaktusa wymaga dedykowanej grupy (bez fallbacku)", () => {
+    process.env.MAILERLITE_GROUP_KAKTUS = "";
+
+    expect(isMailerLiteConfigured("kaktus")).toBe(false);
   });
 });

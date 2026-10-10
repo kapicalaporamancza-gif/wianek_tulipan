@@ -45,27 +45,26 @@ export const POST: APIRoute = async ({ request }) => {
     return Response.json({ message: validation.message }, { status: 400 });
   }
 
+  const { email, name, campaign } = validation.value;
   const db = getDatabase();
   const now = new Date().toISOString();
   const existing = db
     .prepare("SELECT * FROM subscribers WHERE email = ?")
-    .get(validation.value.email) as SubscriberRecord | undefined;
+    .get(email) as SubscriberRecord | undefined;
 
   if (!existing) {
     db.prepare(
       `INSERT INTO subscribers (
          email, consent, mailerlite_status, created_at, updated_at
        ) VALUES (?, ?, 'pending', ?, ?)`,
-    ).run(validation.value.email, 1, now, now);
-  } else if (existing.mailerlite_status === "synced") {
-    return successResponse(true);
+    ).run(email, 1, now, now);
   }
 
   const subscriber = db
     .prepare("SELECT * FROM subscribers WHERE email = ?")
-    .get(validation.value.email) as SubscriberRecord;
+    .get(email) as SubscriberRecord;
 
-  if (!isMailerLiteConfigured()) {
+  if (!isMailerLiteConfigured(campaign)) {
     const status = import.meta.env.PROD ? "not_configured" : "disabled";
     db.prepare(
       `UPDATE subscribers
@@ -78,8 +77,9 @@ export const POST: APIRoute = async ({ request }) => {
 
   try {
     const mailerlite = await addSubscriberToMailerLite(
-      validation.value.email,
-      validation.value.name,
+      email,
+      name,
+      campaign,
     );
     const mailerliteStatus: SubscriberRecord["mailerlite_status"] = "synced";
     db.prepare(

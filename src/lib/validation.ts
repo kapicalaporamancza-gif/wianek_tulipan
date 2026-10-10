@@ -1,13 +1,35 @@
 const EMAIL_PATTERN = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 
+export const CAMPAIGNS = ["tulipan", "kaktus"] as const;
+
+export type Campaign = (typeof CAMPAIGNS)[number];
+
+export const DEFAULT_CAMPAIGN: Campaign = "tulipan";
+
 export type SubscriptionPayload = {
   name: string;
   email: string;
   consent: true;
+  campaign: Campaign;
 };
 
 export type SubscriptionValidation =
   { ok: true; value: SubscriptionPayload } | { ok: false; message: string };
+
+export function normalizeCampaign(value: unknown): Campaign | null {
+  // Brak kampanii (np. starszy formularz) traktujemy jak kampanię domyślną.
+  if (value === undefined || value === null || value === "") {
+    return DEFAULT_CAMPAIGN;
+  }
+
+  if (typeof value !== "string") return null;
+
+  const campaign = value.trim().toLowerCase();
+
+  return (CAMPAIGNS as readonly string[]).includes(campaign)
+    ? (campaign as Campaign)
+    : null;
+}
 
 export function normalizeName(value: unknown): string | null {
   if (typeof value !== "string") return null;
@@ -59,6 +81,7 @@ export function validateSubscription(payload: unknown): SubscriptionValidation {
 
   const name = normalizeName(data.name);
   const email = normalizeEmail(data.email);
+  const campaign = normalizeCampaign(data.campaign);
 
   if (!name) {
     return { ok: false, message: "Podaj swoje imię." };
@@ -66,6 +89,10 @@ export function validateSubscription(payload: unknown): SubscriptionValidation {
 
   if (!email) {
     return { ok: false, message: "Podaj poprawny adres e-mail." };
+  }
+
+  if (!campaign) {
+    return { ok: false, message: "Sprawdź poprawność formularza." };
   }
 
   if (
@@ -85,6 +112,7 @@ export function validateSubscription(payload: unknown): SubscriptionValidation {
       name,
       email,
       consent: true,
+      campaign,
     },
   };
 }

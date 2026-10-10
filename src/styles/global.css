@@ -89,6 +89,13 @@ input {
   box-shadow: 0 24px 70px rgb(71 76 44 / 0.12);
 }
 
+/* Motyw panelu per kampania. Obecnie oba dzielą tę samą paletę —
+   różnice stylistyczne (kolory, akcenty) dodawaj tutaj. */
+.subscription-panel[data-theme="kaktus"] {
+  border-color: rgb(168 81 57 / 0.18);
+  background: rgb(255 255 255 / 0.58);
+}
+
 .status-message {
   min-height: 1.5rem;
 }

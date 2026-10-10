@@ -4,6 +4,8 @@ interface ImportMetaEnv {
   readonly DATABASE_PATH?: string;
   readonly MAILERLITE_API_KEY?: string;
   readonly MAILERLITE_GROUP_ID?: string;
+  readonly MAILERLITE_GROUP_TULIPAN?: string;
+  readonly MAILERLITE_GROUP_KAKTUS?: string;
   readonly MAILERLITE_SUBSCRIBER_STATUS?: string;
   readonly PROD: boolean;
 }
